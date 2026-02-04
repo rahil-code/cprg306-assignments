@@ -13,11 +13,15 @@ export default function Home() {
 
       <li>
         <Link className="text-blue-600 hover:underline" href="/week-3">
-    Week 3
-  </Link>
-  </li>
+          Week 3
+        </Link>
+      </li>
 
-
+      <li>
+        <Link className="text-blue-600 hover:underline" href="/week-4">
+          Week 4
+        </Link>
+      </li>
 
       <p>
         This site contains weekly assignments for CPRG 306. Each week will be
