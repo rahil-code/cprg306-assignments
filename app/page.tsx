@@ -47,6 +47,12 @@ export default function Home() {
         </Link>
       </li>
 
+      <li>
+        <Link className="text-blue-600 hover:underline" href="/week-9">
+          Week 9
+        </Link>
+      </li>
+
       <p>
         This site contains weekly assignments for CPRG 306. Each week will be
         added as a new folder under the app directory.
