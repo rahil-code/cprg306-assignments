@@ -7,7 +7,7 @@ export default function NewItem({ onAddItem }) {
   const [quantity, setQuantity] = useState(1);
   const [category, setCategory] = useState("produce");
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
 
     const item = {
@@ -17,11 +17,15 @@ export default function NewItem({ onAddItem }) {
       category,
     };
 
-    onAddItem(item);
-
-    setName("");
-    setQuantity(1);
-    setCategory("produce");
+    try {
+      await onAddItem(item);
+      setName("");
+      setQuantity(1);
+      setCategory("produce");
+    } catch (error) {
+      console.error("Error submitting item:", error);
+      alert("Failed to add item. Check the browser console.");
+    }
   }
 
   return (

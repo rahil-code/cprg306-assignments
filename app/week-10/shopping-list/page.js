@@ -52,13 +52,18 @@ export default function Page() {
   }
 
   async function handleAddItem(newItem) {
-    const id = await addItem(user.uid, {
-      name: newItem.name,
-      quantity: newItem.quantity,
-      category: newItem.category,
-    });
+    try {
+      const id = await addItem(user.uid, {
+        name: newItem.name,
+        quantity: newItem.quantity,
+        category: newItem.category,
+      });
 
-    setItems((prevItems) => [...prevItems, { ...newItem, id }]);
+      setItems((prevItems) => [...prevItems, { ...newItem, id }]);
+    } catch (error) {
+      console.error("Error adding item:", error);
+      throw error;
+    }
   }
 
   function handleItemSelect(item) {
