@@ -6,6 +6,7 @@ export default function NewItem({ onAddItem }) {
   const [name, setName] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [category, setCategory] = useState("produce");
+  const [isAdding, setIsAdding] = useState(false);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -18,6 +19,7 @@ export default function NewItem({ onAddItem }) {
     };
 
     try {
+      setIsAdding(true);
       await onAddItem(item);
       setName("");
       setQuantity(1);
@@ -25,6 +27,8 @@ export default function NewItem({ onAddItem }) {
     } catch (error) {
       console.error("Error submitting item:", error);
       alert("Failed to add item. Check the browser console.");
+    } finally {
+      setIsAdding(false);
     }
   }
 
@@ -86,9 +90,10 @@ export default function NewItem({ onAddItem }) {
 
       <button
         type="submit"
-        className="w-full rounded-md bg-blue-600 py-2 font-semibold text-white hover:bg-blue-700"
+        disabled={isAdding}
+        className="w-full rounded-md bg-blue-600 py-2 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-400"
       >
-        +
+        {isAdding ? "Adding..." : "+"}
       </button>
     </form>
   );
