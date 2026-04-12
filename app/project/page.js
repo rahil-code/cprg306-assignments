@@ -14,14 +14,50 @@ export default function Page() {
   function handleGenerateRecommendation(event) {
     event.preventDefault();
 
-    const result = {
-      stickFlex: "55-65",
-      curve: "Mid curve",
-      skateFit: "Standard fit",
-      notes: `Recommended for a ${skillLevel} ${position}.`,
-    };
+    let stickFlex = "55-65";
+    let curve = "Mid curve";
+    let skateFit = "Standard fit";
+    let notes = "";
 
-    setRecommendation(result);
+    const numericWeight = parseInt(weight);
+
+    if (position === "forward") {
+      stickFlex = skillLevel === "beginner" ? "50-60" : "65-75";
+      curve = "Mid curve";
+      skateFit = "Tapered fit";
+      notes = "Great for quicker puck handling, agility, and offensive play.";
+    } else if (position === "defense") {
+      stickFlex = skillLevel === "beginner" ? "65-75" : "75-85";
+      curve = "Heel curve";
+      skateFit = "Standard fit";
+      notes = "Good for stronger shots, reach, and defensive control.";
+    } else if (position === "goalie") {
+      stickFlex = "Goalie stick";
+      curve = "Paddle curve";
+      skateFit = "Wide fit";
+      notes = "Designed for puck stopping, balance, and crease movement.";
+    }
+
+    if (!isNaN(numericWeight)) {
+      if (numericWeight > 200 && position !== "goalie") {
+        stickFlex = "75-85";
+      } else if (numericWeight < 140 && position !== "goalie") {
+        stickFlex = "40-50";
+      }
+    }
+
+    if (handedness === "right" && position !== "goalie") {
+      notes += " Right-handed setup recommended.";
+    } else if (handedness === "left" && position !== "goalie") {
+      notes += " Left-handed setup recommended.";
+    }
+
+    setRecommendation({
+      stickFlex,
+      curve,
+      skateFit,
+      notes,
+    });
   }
 
   return (
@@ -41,7 +77,7 @@ export default function Page() {
                   value={height}
                   onChange={(e) => setHeight(e.target.value)}
                   placeholder="e.g. 5'10"
-                  className="w-full rounded-md border border-slate-600 bg-slate-700 p-2 text-white"
+                  className="w-full rounded-md border border-slate-600 bg-slate-700 p-2 text-white placeholder-slate-400"
                 />
               </div>
 
@@ -51,8 +87,8 @@ export default function Page() {
                   type="text"
                   value={weight}
                   onChange={(e) => setWeight(e.target.value)}
-                  placeholder="e.g. 170 lbs"
-                  className="w-full rounded-md border border-slate-600 bg-slate-700 p-2 text-white"
+                  placeholder="e.g. 170"
+                  className="w-full rounded-md border border-slate-600 bg-slate-700 p-2 text-white placeholder-slate-400"
                 />
               </div>
 
@@ -117,23 +153,34 @@ export default function Page() {
                 Fill out the form and generate a recommendation.
               </p>
             ) : (
-              <div className="space-y-3 text-slate-200">
-                <p>
-                  <span className="font-semibold">Stick Flex:</span>{" "}
-                  {recommendation.stickFlex}
-                </p>
-                <p>
-                  <span className="font-semibold">Curve:</span>{" "}
-                  {recommendation.curve}
-                </p>
-                <p>
-                  <span className="font-semibold">Skate Fit:</span>{" "}
-                  {recommendation.skateFit}
-                </p>
-                <p>
-                  <span className="font-semibold">Notes:</span>{" "}
-                  {recommendation.notes}
-                </p>
+              <div className="space-y-4">
+                <div className="rounded-md bg-slate-700 p-4">
+                  <p className="text-sm text-slate-300">Stick Flex</p>
+                  <p className="text-lg font-semibold text-white">
+                    {recommendation.stickFlex}
+                  </p>
+                </div>
+
+                <div className="rounded-md bg-slate-700 p-4">
+                  <p className="text-sm text-slate-300">Curve</p>
+                  <p className="text-lg font-semibold text-white">
+                    {recommendation.curve}
+                  </p>
+                </div>
+
+                <div className="rounded-md bg-slate-700 p-4">
+                  <p className="text-sm text-slate-300">Skate Fit</p>
+                  <p className="text-lg font-semibold text-white">
+                    {recommendation.skateFit}
+                  </p>
+                </div>
+
+                <div className="rounded-md bg-slate-700 p-4">
+                  <p className="text-sm text-slate-300">Notes</p>
+                  <p className="text-lg font-semibold text-white">
+                    {recommendation.notes}
+                  </p>
+                </div>
               </div>
             )}
           </section>
