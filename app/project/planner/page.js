@@ -3,48 +3,58 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useUserAuth } from "../../contexts/AuthContext";
-import { addProfile, getProfiles } from "../_services/profile-service";
+import { addProfile, subscribeToProfiles } from "../_services/profile-service";
 import ProfileForm from "./ProfileForm";
 import RecommendationCard from "./RecommendationCard";
 import SavedProfilesList from "./SavedProfilesList";
 
 function generateRecommendation(profile) {
-  let stickFlex = "55-65";
-  let curve = "Mid curve";
-  let skateFit = "Standard fit";
+  let stickFlex = "55";
+  let curve = "Mid Curve";
+  let skateFit = "Standard Fit";
   let notes = "";
 
   const numericWeight = parseInt(profile.weight);
 
-  if (profile.position === "forward") {
-    stickFlex = profile.skillLevel === "beginner" ? "50-60" : "65-75";
-    curve = "Mid curve";
-    skateFit = "Tapered fit";
-    notes = "Great for quicker puck handling, agility, and offensive play.";
-  } else if (profile.position === "defense") {
-    stickFlex = profile.skillLevel === "beginner" ? "65-75" : "75-85";
-    curve = "Heel curve";
-    skateFit = "Standard fit";
-    notes = "Good for stronger shots, reach, and defensive control.";
-  } else if (profile.position === "goalie") {
-    stickFlex = "Goalie stick";
-    curve = "Paddle curve";
-    skateFit = "Wide fit";
-    notes = "Designed for puck stopping, balance, and crease movement.";
-  }
+  if (profile.position === "goalie") {
+    stickFlex = "Goalie Stick";
+    curve = "Paddle Curve";
+    skateFit = "Wide Fit";
+    notes = "Designed for puck stopping, crease movement, and goalie balance.";
+  } else {
+    let targetFlex = !isNaN(numericWeight) ? numericWeight / 2 : 55;
 
-  if (!isNaN(numericWeight)) {
-    if (numericWeight > 200 && profile.position !== "goalie") {
-      stickFlex = "75-85";
-    } else if (numericWeight < 140 && profile.position !== "goalie") {
-      stickFlex = "40-50";
+    if (profile.skillLevel === "beginner") {
+      targetFlex -= 10;
+    } else if (profile.skillLevel === "intermediate") {
+      targetFlex -= 5;
     }
-  }
 
-  if (profile.handedness === "right" && profile.position !== "goalie") {
-    notes += " Right-handed setup recommended.";
-  } else if (profile.handedness === "left" && profile.position !== "goalie") {
-    notes += " Left-handed setup recommended.";
+    const flexOptions = [40, 50, 55, 65, 75, 85, 95];
+
+    const closestFlex = flexOptions.reduce((prev, curr) =>
+      Math.abs(curr - targetFlex) < Math.abs(prev - targetFlex) ? curr : prev,
+    );
+
+    stickFlex = `${closestFlex}`;
+
+    if (profile.position === "forward") {
+      curve = "Mid Curve";
+      skateFit = "Tapered Fit";
+      notes = "Optimized for puck handling, agility, and quick release shots.";
+    } else if (profile.position === "defense") {
+      curve = "Heel Curve";
+      skateFit = "Standard Fit";
+      notes = "Better for stronger shots, defensive reach, and more stability.";
+    }
+
+    notes += " Recommended flex is based on roughly half of body weight.";
+
+    if (profile.handedness === "left") {
+      notes += " Left-handed setup recommended.";
+    } else {
+      notes += " Right-handed setup recommended.";
+    }
   }
 
   return {
@@ -62,14 +72,13 @@ export default function Page() {
   const [profiles, setProfiles] = useState([]);
 
   useEffect(() => {
-    async function loadProfiles() {
-      if (!user) return;
+    if (!user) return;
 
-      const userProfiles = await getProfiles(user.uid);
-      setProfiles(userProfiles);
-    }
+    const unsubscribe = subscribeToProfiles(user.uid, (profilesData) => {
+      setProfiles(profilesData);
+    });
 
-    loadProfiles();
+    return () => unsubscribe();
   }, [user]);
 
   if (!user) {
@@ -99,22 +108,26 @@ export default function Page() {
   async function handleSaveProfile() {
     if (!recommendation) return;
 
-    const profileToSave = {
-      height: recommendation.height,
-      weight: recommendation.weight,
-      position: recommendation.position,
-      handedness: recommendation.handedness,
-      skillLevel: recommendation.skillLevel,
-      stickFlex: recommendation.stickFlex,
-      curve: recommendation.curve,
-      skateFit: recommendation.skateFit,
-      notes: recommendation.notes,
-      createdAt: Date.now(),
-    };
+    try {
+      const profileToSave = {
+        height: recommendation.height,
+        weight: recommendation.weight,
+        position: recommendation.position,
+        handedness: recommendation.handedness,
+        skillLevel: recommendation.skillLevel,
+        stickFlex: recommendation.stickFlex,
+        curve: recommendation.curve,
+        skateFit: recommendation.skateFit,
+        notes: recommendation.notes,
+        createdAt: Date.now(),
+      };
 
-    const id = await addProfile(user.uid, profileToSave);
-
-    setProfiles((prevProfiles) => [{ id, ...profileToSave }, ...prevProfiles]);
+      await addProfile(user.uid, profileToSave);
+      setRecommendation(null);
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      alert("Failed to save profile.");
+    }
   }
 
   async function handleLogout() {
